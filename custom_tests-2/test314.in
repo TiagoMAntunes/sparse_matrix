@@ -1,0 +1,90 @@
+a 200 98 1
+l 10
+i
+i
+i
+o column
+o column
+c 72
+z 16
+p
+l 72
+o column
+p
+i
+c 79
+i
+l 54
+o column
+p
+z 236
+z 238
+o
+a 18 72 229
+a 135 202 144
+a 77 147 206
+a 220 166 120
+a 181 49 72
+a 254 79 55
+a 128 156 4
+o
+o column
+z 78
+o
+i
+i
+z 158
+a 194 248 180
+a 202 30 5
+z 242
+i
+l 204
+o column
+i
+p
+o column
+o
+a 90 182 104
+a 176 144 77
+a 90 218 243
+a 200 0 0
+a 246 135 126
+a 237 207 161
+a 13 94 158
+z 5
+z 253
+o
+i
+l 2
+i
+c 65
+o
+o column
+i
+c 192
+p
+a 88 169 94
+a 84 12 1
+l 206
+i
+c 141
+i
+o
+p
+l 182
+o column
+p
+p
+o column
+a 8 254 215
+a 187 247 136
+i
+p
+o
+o
+c 246
+i
+l 46
+o
+z 138
+q

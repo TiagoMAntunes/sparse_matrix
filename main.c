@@ -16,7 +16,7 @@ typedef struct {
 
 typedef struct {
     unsigned long line;
-    short offset;
+    short offset, nelements;
 } Offset;
 
 
@@ -163,7 +163,7 @@ void infoLine() {
         return;
     }
     elementSort(columnElements, 0, pointer-1, &columnCompare);
-    
+
     for (i = 0, columnCount = minj; columnCount <= maxj; columnCount++)
         if (columnCount == columnElements[i].column)
             printf(" %0.3f", columnElements[i++].value);
@@ -295,12 +295,20 @@ void loadFile() {
     reevaluateLimits();
 }
 
-void offsetSort(Offset a[], int l, int r) {
+int offsetLineCmp(Offset A, Offset B) {
+    return A.line < B.line;
+}
+
+int offsetAmountCmp(Offset A, Offset B) {
+    return A.nelements < B.nelements || (A.nelements == B.nelements && A.line > B.line);
+}
+
+void offsetSort(Offset a[], int l, int r, int (*less)()) {
     short i,j;
     for (i = l+1; i <= r; i++) {
         Offset v = a[i];
         j = i-1;
-        while (j >= l && (v.line <= a[j].line)) {
+        while (j >= l && less(v, a[j])) {
             a[j+1] = a[j];
             j--;
         }
@@ -312,30 +320,119 @@ short removeDuplicates(Offset a[], int l, int r) {
     short i, j;
     for (i = l, j = l; i <= r; i++)
         if (a[i].line != a[i+1].line)
-            a[j++] = a[i];
+            a[j++].line = a[i].line;
+        else
+            a[j].nelements++;
     return j;
+}
+
+short columnSearch(Element a[], int l, int r, unsigned long column) {
+    short m = l + (r-l)/2;
+    if (l > r) 
+        return -1;
+    else if (a[m].column == column)
+        return m;
+    else if (a[m].column < column)
+        return columnSearch(a, m+1, r, column);
+    else
+        return columnSearch(a, 0, m-1, column);
+}
+
+void insertOrdered(Element compressed[], Element elements[], short compressedPointer, short elementsPointer, short offset) {
+    short i, j, k;
+    Element aux[compressedPointer + elementsPointer];
+    k = 0; i = 0; j = 0; 
+    while (i < compressedPointer && j < elementsPointer) 
+        if (compressed[i].column > elements[j].column + offset) {
+            aux[k] = elements[j++];
+            aux[k++].column += offset;
+        } else 
+            aux[k++] = compressed[i++];
+
+    while(i < compressedPointer)
+        aux[k++] = compressed[i++];
+    while(j < elementsPointer) {
+        aux[k] = elements[j++];
+        aux[k++].column += offset;
+    }   
+
+    for (i = 0; i < k; i++)
+        compressed[i] = aux[i];
+    
+}
+
+short fits(Element compressed[], short compressedPointer, short nelements, unsigned long line) {
+    short i, elementsPointer = 0, itFits, current_offset, pos;
+    Element elements[nelements];
+    
+    /* Get elements to use*/
+    for (i = 0; i < vecpointer && elementsPointer < nelements; i++) 
+        if (matrix[i].line == line)
+            elements[elementsPointer++] = matrix[i];
+    
+    /* Get offset */
+
+    itFits = 0;
+    current_offset = 0;
+    while (!itFits) {
+        itFits = 1;
+        for (i = 0; i < elementsPointer; i++) { /* Verificar offset insertion */
+            pos = columnSearch(compressed, 0, compressedPointer, elements[i].column + current_offset);
+            if (pos != -1) {
+                current_offset++;
+                itFits = 0;
+                break;
+            }
+        }
+    }
+
+    insertOrdered(compressed, elements, compressedPointer, elementsPointer, current_offset);
+    return current_offset;
 }
 
 void compress() {
     Element compressed[vecpointer];
     Offset offset[vecpointer];
-    short i, pointer;
+    short i, offsetPointer = 0, compressedPointer = 0, current_offset, maxOffset = 0;
 
     if (vecpointer == 0 || ((double) vecpointer / ((maxi-mini+1)*(maxj-minj+1))) > 0.5) {
         printf("dense matrix\n");
         return;
     }
 
-    /* Get all lines */
+    /* Get all lines and initialize arrays */
     for (i = 0; i < vecpointer; i++) {
         offset[i].line = matrix[i].line;
         offset[i].offset = 0;
+        offset[i].nelements = 1;
+        compressed[i].line = 0;
+        compressed[i].column = 0;
+        compressed[i].value = zero;
     }
 
-    /* Sort by line and remove duplicate lines */
-    offsetSort(offset, 0, i-1);
-    pointer = removeDuplicates(offset, 0, i-1);
+    /* Remove duplicate lines and sort by density */
+    offsetSort(offset, 0, i-1, &offsetLineCmp);
+    offsetPointer = removeDuplicates(offset, 0, i-1);
+    offsetSort(offset, 0, offsetPointer-1, &offsetAmountCmp);
+        
+    for (i = offsetPointer-1; i >= 0; i--) {
+        current_offset = fits(compressed, compressedPointer, offset[i].nelements, offset[i].line);
+        compressedPointer += offset[i].nelements;
+        offset[i].offset = current_offset;
+        if (maxOffset < current_offset)
+            maxOffset = current_offset;
+    }
 
-    
+    offsetSort(offset, 0, offsetPointer-1, &offsetLineCmp);
 
+    printf("value =");
+    for (i = 0; i < compressedPointer+maxOffset-1; i++)
+        printf(" %0.3f", compressed[i].value);
+    printf("\nindex =");
+    for (i = 0; i < compressedPointer+maxOffset-1; i++)
+        printf(" %lu", compressed[i].line);
+    printf("\noffset =");
+    for (i = 0; i < offsetPointer; i++)
+        printf(" %d", offset[i].offset);
+    printf("\n");
 }
