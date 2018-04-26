@@ -165,7 +165,7 @@ void infoLine() {
     elementSort(columnElements, 0, pointer-1, &columnCompare);
 
     for (i = 0, columnCount = minj; columnCount <= maxj; columnCount++)
-        if (columnCount == columnElements[i].column)
+        if (i < pointer && columnCount == columnElements[i].column)
             printf(" %0.3f", columnElements[i++].value);
         else
             printf(" %0.3f", zero);
@@ -191,7 +191,7 @@ void infoColumn() {
     elementSort(lineElements, 0, pointer-1, &lineCompare);
     
     for (i = 0, lineCount = mini; lineCount <= maxi ; lineCount++)
-        if (lineCount == lineElements[i].line) {
+        if (i < pointer && lineCount == lineElements[i].line) {
             printf("[%lu;%lu]=%0.3f\n", lineElements[i].line, lineElements[i].column, lineElements[i].value);
             i++;
         }
@@ -330,7 +330,7 @@ short columnSearch(Element a[], int l, int r, unsigned long column) {
     short m = l + (r-l)/2;
     if (l > r) 
         return -1;
-    else if (a[m].column == column)
+    else if (a[m].column == column && a[m].value != zero)
         return m;
     else if (a[m].column < column)
         return columnSearch(a, m+1, r, column);
@@ -370,6 +370,8 @@ short fits(Element compressed[], short compressedPointer, short nelements, unsig
         if (matrix[i].line == line)
             elements[elementsPointer++] = matrix[i];
     
+    elementSort(elements,0, elementsPointer-1, columnCompare);
+
     /* Get offset */
 
     itFits = 0;
@@ -393,7 +395,7 @@ short fits(Element compressed[], short compressedPointer, short nelements, unsig
 void compress() {
     Element compressed[vecpointer];
     Offset offset[vecpointer];
-    short i, offsetPointer = 0, compressedPointer = 0, current_offset, maxOffset = 0;
+    short i, j, offsetPointer = 0, compressedPointer = 0, current_offset, maxOffset = 0;
 
     if (vecpointer == 0 || ((double) vecpointer / ((maxi-mini+1)*(maxj-minj+1))) > 0.5) {
         printf("dense matrix\n");
@@ -426,13 +428,26 @@ void compress() {
     offsetSort(offset, 0, offsetPointer-1, &offsetLineCmp);
 
     printf("value =");
-    for (i = 0; i < compressedPointer+maxOffset-1; i++)
-        printf(" %0.3f", compressed[i].value);
+    for (i = minj, j = 0; i < maxj+maxOffset+1; i++) {
+        if (j < compressedPointer && i == compressed[j].column)
+            printf(" %0.3f", compressed[j++].value);
+        else
+            printf(" %0.3f", zero);
+    }
+
     printf("\nindex =");
-    for (i = 0; i < compressedPointer+maxOffset-1; i++)
-        printf(" %lu", compressed[i].line);
+    for (i = minj, j = 0; i < maxj+maxOffset+1; i++){
+        if (j < compressedPointer && i == compressed[j].column)
+            printf(" %lu", compressed[j++].line);
+        else
+            printf(" 0");
+    }
+
     printf("\noffset =");
-    for (i = 0; i < offsetPointer; i++)
-        printf(" %d", offset[i].offset);
+    for (i = mini, j = 0; i < maxi + 1; i++)
+        if (j < offsetPointer && i == offset[j].line)
+            printf(" %d", offset[j++].offset);
+        else
+            printf(" 0");
     printf("\n");
 }
