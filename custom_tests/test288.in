@@ -1,0 +1,61 @@
+a 88 81 159
+a 12 138 236
+a 151 198 221
+a 67 198 199
+a 12 163 39
+a 134 141 254
+a 103 73 95
+a 150 38 64
+a 73 73 135
+a 19 213 136
+a 253 239 178
+a 84 151 115
+a 190 221 231
+a 7 203 193
+a 109 69 11
+a 166 120 97
+a 211 237 219
+a 21 81 57
+a 56 157 36
+a 182 204 160
+s
+o column
+o column
+s
+s
+c 253
+i
+l 92
+s
+o
+i
+o column
+s
+s
+l 128
+z 245
+p
+i
+l 60
+o
+z 45
+o column
+l 98
+z 121
+p
+o column
+o
+o column
+l 220
+s
+s
+o column
+i
+p
+o
+o column
+c 232
+o column
+i
+p
+q

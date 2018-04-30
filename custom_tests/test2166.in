@@ -1,0 +1,61 @@
+a 130 226 22
+a 4 171 62
+a 211 73 238
+a 138 166 217
+a 226 101 212
+a 253 38 88
+a 253 52 82
+a 72 22 96
+a 209 0 30
+a 148 68 196
+a 7 56 93
+a 101 132 134
+a 119 142 0
+a 53 210 242
+a 30 93 18
+a 144 14 1
+a 168 112 10
+a 103 31 28
+a 163 130 200
+a 142 211 221
+o column
+s
+i
+s
+o column
+o column
+c 45
+o column
+o column
+i
+c 68
+i
+z 256
+o column
+o
+c 64
+p
+s
+l 221
+l 135
+z 164
+o column
+l 249
+i
+l 72
+c 210
+p
+o column
+z 203
+s
+o column
+c 31
+i
+o column
+o
+s
+i
+c 18
+z 69
+p
+q

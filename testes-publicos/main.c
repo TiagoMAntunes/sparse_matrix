@@ -10,7 +10,7 @@
 
 /* Struct definitions */
 typedef struct {
-    unsigned long line, column;
+    unsigned long line, column;                                                
     double value;
 } Element;
 
@@ -89,6 +89,8 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+
+/* Add an element to the function, updating its limits */
 void addElement() {
     unsigned long line, column;
     double value;
@@ -112,14 +114,21 @@ void addElement() {
     }
 }
 
+/* Removes all zeros from matrix 
+ * @return int - new vecpointer
+ */
 int removeZeros() {
     short i, j = 0;
     for (i = 0; i < vecpointer; i++)
         if (matrix[i].value != zero)
-            matrix[j++] = matrix[i]; /* j only increments if value is different than zero. Zero values get overwritten or become out of bounds */
+            matrix[j++] = matrix[i];
     return j;
 }
 
+/*  Updates global limits of matrix given an element
+ *  @param unsigned long line
+ *  @param unsgined long column
+ */
 void updateLimits(unsigned long line, unsigned long column) {
     if (mini > line) mini = line;
     if (minj > column) minj = column;
@@ -127,6 +136,7 @@ void updateLimits(unsigned long line, unsigned long column) {
     if (maxj < column) maxj = column;
 }
 
+/* Prints matrix elements to stdout */
 void listElements() {
     short i;
     if (vecpointer == 0)
@@ -136,6 +146,7 @@ void listElements() {
             printf("[%lu;%lu]=%0.3f\n", matrix[i].line, matrix[i].column, matrix[i].value);
 }
 
+/* Prints matrix borders and density */
 void infoMatrix() {
     unsigned long size;
     float dens;
@@ -148,6 +159,7 @@ void infoMatrix() {
     printf("[%lu %lu] [%lu %lu] %d / %lu = %0.3f%%\n", mini, minj, maxi, maxj, vecpointer, size, dens);
 }
 
+/* Prints line elements to stdout */
 void infoLine() {
     short pointer = 0, i;
     Element columnElements[vecpointer];
@@ -162,6 +174,7 @@ void infoLine() {
         printf("empty line\n");
         return;
     }
+    /* Sorts elements to print them in a sparse way */
     elementSort(columnElements, 0, pointer-1, &columnCompare);
 
     for (i = 0, columnCount = minj; columnCount <= maxj; columnCount++)
@@ -173,6 +186,7 @@ void infoLine() {
     printf("\n");
 }
 
+/* Prints column elements to stdout */
 void infoColumn() {
     short pointer = 0, i;
     Element lineElements[vecpointer];
@@ -188,6 +202,7 @@ void infoColumn() {
         return;
     }
 
+    /* Sorts elements to print them in a sparse way */
     elementSort(lineElements, 0, pointer-1, &lineCompare);
     
     for (i = 0, lineCount = mini; lineCount <= maxi ; lineCount++)
@@ -199,14 +214,30 @@ void infoColumn() {
             printf("[%lu;%lu]=%0.3f\n", lineCount, column, zero);
 }
 
+/*  Returns column of A <= column of B
+ *  @param Element A
+ *  @param Element B
+ *  @return int
+ */
 int columnCompare(Element A, Element B) {
     return A.column <= B.column;
 }
 
+/*  Returns line of A <= line of B
+ *  @param Element A
+ *  @param Element B
+ *  @return int
+ */
 int lineCompare(Element A, Element B) {
     return A.line <= B.line;
 }
 
+/*  Sorts element array using given function
+ *  @param Element a[]
+ *  @param int l
+ *  @param int r
+ *  @param int (*less)()
+ */
 void elementSort(Element a[], int l, int r, int (*less)()) {
     short i,j;
     for (i = l+1; i <= r; i++) {
@@ -220,14 +251,25 @@ void elementSort(Element a[], int l, int r, int (*less)()) {
     }
 }
 
+/*  Returns A < B sorted by column first
+ *  @param Element A
+ *  @param Element B
+ *  @return int
+ */
 int sortColumns(Element A, Element B) {
     return key2(A) < key2(B) || (key1(A) < key1(B) && key2(A) == key2(B));
 }
 
+/*  Returns A < B sorted by line first
+ *  @param Element A
+ *  @param Element B
+ *  @return int
+ */
 int sortLines(Element A, Element B) {
     return key1(A) < key1(B) || (key2(A) < key2(B) && key1(A) == key1(B));
 }
 
+/* Sorts matrix changing compare function according to user input */
 void sort() {
     char c;
     short i;
@@ -238,6 +280,7 @@ void sort() {
         elementSort(matrix, 0, vecpointer - 1, &sortLines);
 }
 
+/* Changes current zero to new zero given by user input, eliminating respective elements */
 void redefineZero() {
     double value;
     scanf(" %lf", &value);
@@ -246,6 +289,7 @@ void redefineZero() {
     reevaluateLimits(); /* Updates matrix border limits */
 }
 
+/* Rechecks matrix limits from start */
 void reevaluateLimits() {
     short i;
     if (vecpointer == 0) {
@@ -259,7 +303,8 @@ void reevaluateLimits() {
             updateLimits(matrix[i].line, matrix[i].column);
     }
 }
-
+ 
+/* Saves matrix to 'filelame' file */
 void saveFile() {
     short i;
     char c;
@@ -278,6 +323,7 @@ void saveFile() {
     fclose(f);
 }
 
+/* Loads input from 'filename' file if it exists */
 void loadFile() {
     Element temp;
     FILE *f;
@@ -295,14 +341,30 @@ void loadFile() {
     reevaluateLimits();
 }
 
+/*  Returns A < B according to lines 
+ *  @param Offset A
+ *  @param Offset B
+ *  @return int
+ */
 int offsetLineCmp(Offset A, Offset B) {
     return A.line < B.line;
 }
 
+/*  Returns A < B according to line number of elements first and then line index
+ *  @param Offset A
+ *  @param Offset B
+ *  @return int
+ */
 int offsetAmountCmp(Offset A, Offset B) {
     return A.nelements < B.nelements || (A.nelements == B.nelements && A.line > B.line);
 }
 
+/*  Sorts a[] according to given function 
+ *  @param Offset a[]
+ *  @param int l
+ *  @param int r
+ *  @param int (*less)()
+ */
 void offsetSort(Offset a[], int l, int r, int (*less)()) {
     short i,j;
     for (i = l+1; i <= r; i++) {
@@ -316,6 +378,11 @@ void offsetSort(Offset a[], int l, int r, int (*less)()) {
     }
 }
 
+/*  Removes duplicate lines from a[], making single elements sum nelements
+ *  @param Offset a[]
+ *  @param int l
+ *  @param int r
+ */
 short removeDuplicates(Offset a[], int l, int r) {
     short i, j;
     for (i = l, j = l; i <= r; i++)
@@ -326,6 +393,13 @@ short removeDuplicates(Offset a[], int l, int r) {
     return j;
 }
 
+/*  Returns index of element with specified column in array a[] by using binary search algorithm
+ *  @param Element a[]
+ *  @param int l
+ *  @param int r
+ *  @param unsigned long column
+ *  @return short
+ */
 short columnSearch(Element a[], int l, int r, unsigned long column) {
     short m = l + (r-l)/2;
     if (l > r) 
@@ -338,6 +412,13 @@ short columnSearch(Element a[], int l, int r, unsigned long column) {
         return columnSearch(a, 0, m-1, column);
 }
 
+/*  Inserts elements[] in compressed[] in an ordered way, using a specified offset
+ *  @param Element compressed[]
+ *  @param Element elemenets[]
+ *  @param short compressedPointer
+ *  @param short elementsPointer
+ *  @param short offset
+ */
 void insertOrdered(Element compressed[], Element elements[], short compressedPointer, short elementsPointer, short offset) {
     short i, j, k;
     Element aux[compressedPointer + elementsPointer];
@@ -360,7 +441,13 @@ void insertOrdered(Element compressed[], Element elements[], short compressedPoi
         compressed[i] = aux[i];
     
 }
-
+/*  Returns offset so that elements with specified line can fit in compressed
+ *  @param Element compressed[]
+ *  @param short compressedPointer
+ *  @param short nelements
+ *  @param unsigned long line
+ *  @return short
+ */
 short fits(Element compressed[], short compressedPointer, short nelements, unsigned long line) {
     short i, elementsPointer = 0, itFits, current_offset, pos;
     Element elements[nelements];
@@ -373,14 +460,13 @@ short fits(Element compressed[], short compressedPointer, short nelements, unsig
     elementSort(elements,0, elementsPointer-1, columnCompare);
 
     /* Get offset */
-
     itFits = 0;
     current_offset = 0;
     while (!itFits) {
         itFits = 1;
-        for (i = 0; i < elementsPointer; i++) { /* Verificar offset insertion */
+        for (i = 0; i < elementsPointer; i++) { /* Verify offset insertion */
             pos = columnSearch(compressed, 0, compressedPointer, elements[i].column + current_offset);
-            if (pos != -1) {
+            if (pos != -1) { /* Position is filled, get new offset */
                 current_offset++;
                 itFits = 0;
                 break;
@@ -392,6 +478,8 @@ short fits(Element compressed[], short compressedPointer, short nelements, unsig
     return current_offset;
 }
 
+
+/* Displays matrix to stdout using compression algorithm */
 void compress() {
     Element compressed[vecpointer];
     Offset offset[vecpointer];
@@ -417,6 +505,7 @@ void compress() {
     offsetPointer = removeDuplicates(offset, 0, i-1);
     offsetSort(offset, 0, offsetPointer-1, &offsetAmountCmp);
         
+    /* Algorithm logic. Fills arrays with info */
     for (i = offsetPointer-1; i >= 0; i--) {
         current_offset = fits(compressed, compressedPointer, offset[i].nelements, offset[i].line);
         compressedPointer += offset[i].nelements;
@@ -427,6 +516,7 @@ void compress() {
 
     offsetSort(offset, 0, offsetPointer-1, &offsetLineCmp);
 
+    /* Print info to stdout */
     printf("value =");
     for (i = minj, j = 0; i < maxj+maxOffset+1; i++) {
         if (j < compressedPointer && i == compressed[j].column)
